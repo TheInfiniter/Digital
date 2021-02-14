@@ -1,6 +1,5 @@
 ﻿using OxyPlot;
 using System;
-using System.Collections.Generic;
 
 namespace Harmonic.Modulation
 {

@@ -19,21 +19,10 @@
             <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
-        <oxy:Plot Grid.Column="0" Grid.Row="0" Title="Сигнал" 
+        <oxy:Plot Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Title="Сигнал" 
                   InvalidateFlag="{Binding Invalidate, UpdateSourceTrigger=PropertyChanged}">
             <oxy:Plot.Series>
                 <oxy:LineSeries ItemsSource="{Binding Points}" 
-                                Color="Crimson" 
-                                MarkerType="Circle" 
-                                MarkerFill="Navy" 
-                                MarkerSize="3"
-                                />
-            </oxy:Plot.Series>
-        </oxy:Plot>
-        <oxy:Plot Grid.Column="0" Grid.Row="1" Title="Амплитудная модуляция" 
-                  InvalidateFlag="{Binding Invalidate, UpdateSourceTrigger=PropertyChanged}">
-            <oxy:Plot.Series>
-                <oxy:LineSeries ItemsSource="{Binding ASK}" 
                                 Color="Crimson" 
                                 MarkerType="Circle" 
                                 MarkerFill="Navy" 

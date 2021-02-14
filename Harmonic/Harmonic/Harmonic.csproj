@@ -63,8 +63,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Modulation\AmplitudeKeyShifting.cs" />
-    <Compile Include="Modulation\FrequencyKeyShifting.cs" />
+    <Compile Include="Modulation\ASK.cs" />
+    <Compile Include="Modulation\FSK.cs" />
     <Compile Include="Modulation\MainSignal.cs" />
     <Compile Include="RelayCommand.cs" />
     <Page Include="MainWindow.xaml">

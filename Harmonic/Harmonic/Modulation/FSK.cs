@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Harmonic.Modulation
 {
-    public class FrequencyKeyShifting
+    public class FSK
     {
     }
 }

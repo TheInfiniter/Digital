@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Harmonic.Modulation
 {
-    public class AmplitudeKeyShifting
+    public class ASK
     {
-        public AmplitudeKeyShifting()
+        public ASK()
         {
 
         }

@@ -31,8 +31,6 @@ namespace Harmonic
         #region параметры несущего сигнала
         private double _freq;
         private double _period;
-        private double _phase;
-        private int _currentX;
         #endregion
 
         private int _invalidate;
@@ -120,12 +118,13 @@ namespace Harmonic
         #endregion
 
         public List<DataPoint> Points { get; set; }
-        public List<DataPoint> ASK { get; set; }
+        public List<DataPoint> FSK { get; set; }
 
         public ICommand Generate { get; set; }
 
         #region модуляции
         MainSignal signal;
+        FSK fsk;
         #endregion
 
         public MainViewModel()
@@ -133,11 +132,9 @@ namespace Harmonic
             Frequency = 10;
             Period = 400;
 
-            Amount = 150;
+            Amount = 250;
 
             Invalidate = 0;
-
-            _phase = 0;
 
             Interval = 40;
             _newTimer = new DispatcherTimer
@@ -151,6 +148,7 @@ namespace Harmonic
             Points = new List<DataPoint>();
 
             signal = new MainSignal();
+            fsk = new FSK();
 
             Generate = new RelayCommand(o =>
             {
@@ -176,7 +174,14 @@ namespace Harmonic
         private void OnTimedEvent(object source, EventArgs e)
         {
             Points.Add(signal.GeneratePoint(Frequency, Period));
-            if (Points.Count > Amount) Points.RemoveRange(0, 1);
+
+            if (Points.Count > Amount)
+            {
+                for (int i = 0; i < (Points.Count - Amount); i++)
+                {
+                    Points.RemoveAt(i);
+                }
+            }
 
             Invalidate++;
             _tick++;
