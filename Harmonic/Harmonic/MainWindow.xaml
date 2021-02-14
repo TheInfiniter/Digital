@@ -47,6 +47,12 @@
                          VerticalContentAlignment="Center" 
                          Text="{Binding Amount, UpdateSourceTrigger=LostFocus}"/>
             </DockPanel>
+            <DockPanel HorizontalAlignment="Stretch" Margin="5">
+                <Label HorizontalAlignment="Stretch" Content="Интервал, мс"/>
+                <TextBox HorizontalAlignment="Stretch" 
+                         VerticalContentAlignment="Center" 
+                         Text="{Binding Interval, UpdateSourceTrigger=LostFocus}"/>
+            </DockPanel>
         </StackPanel>
     </Grid>
 </Window>

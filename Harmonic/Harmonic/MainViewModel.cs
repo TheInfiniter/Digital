@@ -22,6 +22,7 @@ namespace Harmonic
 
         private Timer _timer;
         private int _tick;
+        private double _interval;
         private bool reset = false;
 
         private double _freq;
@@ -50,6 +51,22 @@ namespace Harmonic
             {
                 _period = value;
                 OnPropertyChanged(nameof(Period));
+            }
+        }
+
+        public double Interval
+        {
+            get => _interval;
+            set
+            {
+                _interval = value;
+
+                if (_timer != null)
+                {
+                    _timer.Interval = value;
+                }
+
+                OnPropertyChanged(nameof(Interval));
             }
         }
 
@@ -111,7 +128,8 @@ namespace Harmonic
 
             _phase = 0;
 
-            _timer = new Timer(100);
+            Interval = 40;
+            _timer = new Timer(Interval);
             _timer.Elapsed += OnTimedEvent;
             _tick = 0;
             _timer.AutoReset = true;
@@ -155,12 +173,6 @@ namespace Harmonic
             Points.Add(new DataPoint(_currentX, Math.Sin(_phase)));
             _phase += 2 * Math.PI * Frequency / Period;
             _phase %= (2 * Math.PI);
-            /*
-            if (_phase >= 2 * Math.PI)
-            {
-                _phase = 0;
-            }
-            */
 
             if (Points.Count > Amount) Points.RemoveRange(0, 1);
 
