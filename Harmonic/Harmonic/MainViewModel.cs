@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Timers;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Harmonic
 {
@@ -20,7 +21,8 @@ namespace Harmonic
         private bool _start = false;
         private string _step;
 
-        private Timer _timer;
+        //private Timer _timer;
+        private DispatcherTimer _newTimer;
         private int _tick;
         private double _interval;
         private bool reset = false;
@@ -61,9 +63,9 @@ namespace Harmonic
             {
                 _interval = value;
 
-                if (_timer != null)
+                if (_newTimer != null)
                 {
-                    _timer.Interval = value;
+                    _newTimer.Interval = TimeSpan.FromMilliseconds(value);
                 }
 
                 OnPropertyChanged(nameof(Interval));
@@ -107,7 +109,7 @@ namespace Harmonic
             get => _start;
             set
             {
-                _timer.Enabled = _start = value;
+                _newTimer.IsEnabled = _start = value;
                 OnPropertyChanged(nameof(Start));
                 OnPropertyChanged(nameof(StartName));
             }
@@ -129,10 +131,12 @@ namespace Harmonic
             _phase = 0;
 
             Interval = 40;
-            _timer = new Timer(Interval);
-            _timer.Elapsed += OnTimedEvent;
-            _tick = 0;
-            _timer.AutoReset = true;
+            _newTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(Interval)
+            };
+
+            _newTimer.Tick += OnTimedEvent;
             Step = $"Шаг алгоритма: {_tick} ";
 
             Points = new List<DataPoint>();
@@ -168,7 +172,7 @@ namespace Harmonic
             Start = !Start;
         }
 
-        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        private void OnTimedEvent(object source, EventArgs e)
         {
             Points.Add(new DataPoint(_currentX, Math.Sin(_phase)));
             _phase += 2 * Math.PI * Frequency / Period;
