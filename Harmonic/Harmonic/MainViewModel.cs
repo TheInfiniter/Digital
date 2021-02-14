@@ -1,9 +1,9 @@
-﻿using OxyPlot;
+﻿using Harmonic.Modulation;
+using OxyPlot;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Timers;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -21,21 +21,24 @@ namespace Harmonic
         private bool _start = false;
         private string _step;
 
-        //private Timer _timer;
+        #region таймеры
         private DispatcherTimer _newTimer;
         private int _tick;
         private double _interval;
         private bool reset = false;
+        #endregion
 
+        #region параметры несущего сигнала
         private double _freq;
         private double _period;
-
-        private int _invalidate;
         private double _phase;
         private int _currentX;
+        #endregion
 
+        private int _invalidate;
         private int _amount;
 
+        #region свойства
         public double Frequency
         {
             get => _freq;
@@ -114,10 +117,16 @@ namespace Harmonic
                 OnPropertyChanged(nameof(StartName));
             }
         }
+        #endregion
 
         public List<DataPoint> Points { get; set; }
+        public List<DataPoint> ASK { get; set; }
 
         public ICommand Generate { get; set; }
+
+        #region модуляции
+        MainSignal signal;
+        #endregion
 
         public MainViewModel()
         {
@@ -141,6 +150,8 @@ namespace Harmonic
 
             Points = new List<DataPoint>();
 
+            signal = new MainSignal();
+
             Generate = new RelayCommand(o =>
             {
                 SetTimer();
@@ -152,19 +163,9 @@ namespace Harmonic
             if (!reset)
             {
                 reset = !reset;
-                Points.Clear();
-                _currentX = 0;
-
                 for (int i = 0; i < Amount; i++)
                 {
-                    Points.Add(new DataPoint(_currentX, Math.Sin(_phase)));
-                    _phase += 2 * Math.PI * Frequency / Period;
-
-                    if (_phase >= 2 * Math.PI)
-                    {
-                        _phase = 0;
-                    }
-                    _currentX++;
+                    Points.Add(signal.GeneratePoint(_freq, _period));
                 }
                 Invalidate++;
             }
@@ -174,15 +175,11 @@ namespace Harmonic
 
         private void OnTimedEvent(object source, EventArgs e)
         {
-            Points.Add(new DataPoint(_currentX, Math.Sin(_phase)));
-            _phase += 2 * Math.PI * Frequency / Period;
-            _phase %= (2 * Math.PI);
-
+            Points.Add(signal.GeneratePoint(Frequency, Period));
             if (Points.Count > Amount) Points.RemoveRange(0, 1);
 
             Invalidate++;
             _tick++;
-            _currentX++;
             Step = $"Шаг алгоритма: {_tick} ";
         }
     }
