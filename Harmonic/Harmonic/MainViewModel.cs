@@ -152,6 +152,7 @@ namespace Harmonic
         public List<DataPoint> PointsModulate { get; set; }
         public List<DataPoint> PointsCarrier { get; set; }
         public List<DataPoint> PointsASK { get; set; }
+        public List<DataPoint> PointsFSK { get; set; }
 
         public ICommand Generate { get; set; }
 
@@ -159,11 +160,12 @@ namespace Harmonic
         SignalCarrier carrier;
         SignalModulate modulate;
         ASK ask;
+        FSK fsk;
         #endregion
 
         public MainViewModel()
         {
-            FrequencyCarrier = 40;
+            FrequencyCarrier = 60;
             PeriodCarrier = 400;
 
             FrequencyModulate = 10;
@@ -185,10 +187,12 @@ namespace Harmonic
             PointsCarrier = new List<DataPoint>();
             PointsModulate = new List<DataPoint>();
             PointsASK = new List<DataPoint>();
+            PointsFSK = new List<DataPoint>();
 
             carrier = new SignalCarrier();
             modulate = new SignalModulate();
             ask = new ASK();
+            fsk = new FSK();
 
             Generate = new RelayCommand(o =>
             {
@@ -206,6 +210,7 @@ namespace Harmonic
                     PointsCarrier.Add(carrier.GeneratePoint(FrequencyCarrier, PeriodCarrier));
                     PointsModulate.Add(modulate.GeneratePoint(FrequencyModulate, PeriodModulate));
                     PointsASK.Add(ask.GeneratePoint(modulate.Phase, carrier.Phase));
+                    PointsFSK.Add(fsk.GeneratePoint(modulate.Phase, carrier.Phase));
                 }
                 Invalidate++;
             }
@@ -217,7 +222,8 @@ namespace Harmonic
         {
             GenerateCarrier();
             GenerateModul();
-            GenerateModulated();
+            GenerateASK();
+            GenerateFSK();
 
             Invalidate++;
             _tick++;
@@ -250,7 +256,7 @@ namespace Harmonic
             }
         }
 
-        private void GenerateModulated()
+        private void GenerateASK()
         {
             PointsASK.Add(ask.GeneratePoint(modulate.Phase, carrier.Phase));
 
@@ -259,6 +265,19 @@ namespace Harmonic
                 for (int i = 0; i < (PointsASK.Count - Amount); i++)
                 {
                     PointsASK.RemoveAt(i);
+                }
+            }
+        }
+
+        private void GenerateFSK()
+        {
+            PointsFSK.Add(fsk.GeneratePoint(modulate.Phase, carrier.Phase));
+
+            if (PointsFSK.Count > Amount)
+            {
+                for (int i = 0; i < (PointsFSK.Count - Amount); i++)
+                {
+                    PointsFSK.RemoveAt(i);
                 }
             }
         }

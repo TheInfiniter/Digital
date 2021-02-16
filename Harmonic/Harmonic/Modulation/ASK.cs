@@ -14,7 +14,7 @@ namespace Harmonic.Modulation
 
         public DataPoint GeneratePoint(double phaseModul, double phaseCarrier)
         {
-            DataPoint point = new DataPoint(_currentX, (1 + Math.Sin(phaseModul)) * Math.Sin(phaseCarrier));
+            DataPoint point = new DataPoint(_currentX, Math.Sin(phaseModul) * Math.Sin(phaseCarrier));
             _currentX++;
             return point;
         }
