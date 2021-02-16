@@ -3,12 +3,20 @@ using System;
 
 namespace Harmonic.Modulation
 {
-    public class MainSignal
+    public class SignalCarrier
     {
         private double _phase;
         private int _currentX;
 
-        public MainSignal()
+        public double Phase
+        {
+            get
+            {
+                return _phase;
+            }
+        }
+
+        public SignalCarrier()
         {
             _phase = 0;
             _currentX = 0;

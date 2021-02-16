@@ -65,7 +65,8 @@
     </ApplicationDefinition>
     <Compile Include="Modulation\ASK.cs" />
     <Compile Include="Modulation\FSK.cs" />
-    <Compile Include="Modulation\MainSignal.cs" />
+    <Compile Include="Modulation\SignalModulate.cs" />
+    <Compile Include="Modulation\SignalCarrier.cs" />
     <Compile Include="RelayCommand.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

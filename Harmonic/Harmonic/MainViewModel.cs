@@ -3,6 +3,7 @@ using OxyPlot;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -22,41 +23,72 @@ namespace Harmonic
         private string _step;
 
         #region таймеры
-        private DispatcherTimer _newTimer;
+        private DispatcherTimer _timer;
         private int _tick;
         private double _interval;
         private bool reset = false;
         #endregion
 
         #region параметры несущего сигнала
-        private double _freq;
-        private double _period;
+        private double _freqCarrier;
+        private double _periodCarrier;
         #endregion
 
+        #region параметры модулирующего сигнала
+        private double _freqModulate;
+        private double _periodModulate;
+        #endregion
+
+        #region прочие параметры
         private int _invalidate;
         private int _amount;
+        #endregion
 
-        #region свойства
-        public double Frequency
+        #region свойства несущего сигнала
+        public double FrequencyCarrier
         {
-            get => _freq;
+            get => _freqCarrier;
             set 
             {
-                _freq = value;
-                OnPropertyChanged(nameof(Frequency));
+                _freqCarrier = value;
+                OnPropertyChanged(nameof(FrequencyCarrier));
             }
         }
 
-        public double Period
+        public double PeriodCarrier
         {
-            get => _period;
+            get => _periodCarrier;
             set
             {
-                _period = value;
-                OnPropertyChanged(nameof(Period));
+                _periodCarrier = value;
+                OnPropertyChanged(nameof(PeriodCarrier));
+            }
+        }
+        #endregion
+
+        #region свойства модулирующего сигнала
+        public double FrequencyModulate
+        {
+            get => _freqModulate;
+            set
+            {
+                _freqModulate = value;
+                OnPropertyChanged(nameof(FrequencyModulate));
             }
         }
 
+        public double PeriodModulate
+        {
+            get => _periodModulate;
+            set
+            {
+                _periodModulate = value;
+                OnPropertyChanged(nameof(PeriodModulate));
+            }
+        }
+        #endregion
+
+        #region прочие свойства
         public double Interval
         {
             get => _interval;
@@ -64,9 +96,9 @@ namespace Harmonic
             {
                 _interval = value;
 
-                if (_newTimer != null)
+                if (_timer != null)
                 {
-                    _newTimer.Interval = TimeSpan.FromMilliseconds(value);
+                    _timer.Interval = TimeSpan.FromMilliseconds(value);
                 }
 
                 OnPropertyChanged(nameof(Interval));
@@ -110,45 +142,53 @@ namespace Harmonic
             get => _start;
             set
             {
-                _newTimer.IsEnabled = _start = value;
+                _timer.IsEnabled = _start = value;
                 OnPropertyChanged(nameof(Start));
                 OnPropertyChanged(nameof(StartName));
             }
         }
         #endregion
 
-        public List<DataPoint> Points { get; set; }
-        public List<DataPoint> FSK { get; set; }
+        public List<DataPoint> PointsModulate { get; set; }
+        public List<DataPoint> PointsCarrier { get; set; }
+        public List<DataPoint> PointsASK { get; set; }
 
         public ICommand Generate { get; set; }
 
-        #region модуляции
-        MainSignal signal;
-        FSK fsk;
+        #region сигналы
+        SignalCarrier carrier;
+        SignalModulate modulate;
+        ASK ask;
         #endregion
 
         public MainViewModel()
         {
-            Frequency = 10;
-            Period = 400;
+            FrequencyCarrier = 40;
+            PeriodCarrier = 400;
+
+            FrequencyModulate = 10;
+            PeriodModulate = 800;
 
             Amount = 250;
 
             Invalidate = 0;
 
             Interval = 40;
-            _newTimer = new DispatcherTimer
+            _timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(Interval)
             };
 
-            _newTimer.Tick += OnTimedEvent;
+            _timer.Tick += OnTimedEvent;
             Step = $"Шаг алгоритма: {_tick} ";
 
-            Points = new List<DataPoint>();
+            PointsCarrier = new List<DataPoint>();
+            PointsModulate = new List<DataPoint>();
+            PointsASK = new List<DataPoint>();
 
-            signal = new MainSignal();
-            fsk = new FSK();
+            carrier = new SignalCarrier();
+            modulate = new SignalModulate();
+            ask = new ASK();
 
             Generate = new RelayCommand(o =>
             {
@@ -163,7 +203,9 @@ namespace Harmonic
                 reset = !reset;
                 for (int i = 0; i < Amount; i++)
                 {
-                    Points.Add(signal.GeneratePoint(_freq, _period));
+                    PointsCarrier.Add(carrier.GeneratePoint(FrequencyCarrier, PeriodCarrier));
+                    PointsModulate.Add(modulate.GeneratePoint(FrequencyModulate, PeriodModulate));
+                    PointsASK.Add(ask.GeneratePoint(modulate.Phase, carrier.Phase));
                 }
                 Invalidate++;
             }
@@ -173,19 +215,52 @@ namespace Harmonic
 
         private void OnTimedEvent(object source, EventArgs e)
         {
-            Points.Add(signal.GeneratePoint(Frequency, Period));
-
-            if (Points.Count > Amount)
-            {
-                for (int i = 0; i < (Points.Count - Amount); i++)
-                {
-                    Points.RemoveAt(i);
-                }
-            }
+            GenerateCarrier();
+            GenerateModul();
+            GenerateModulated();
 
             Invalidate++;
             _tick++;
             Step = $"Шаг алгоритма: {_tick} ";
+        }
+
+        private void GenerateCarrier()
+        {
+            PointsCarrier.Add(carrier.GeneratePoint(FrequencyCarrier, PeriodCarrier));
+
+            if (PointsCarrier.Count > Amount)
+            {
+                for (int i = 0; i < (PointsCarrier.Count - Amount); i++)
+                {
+                    PointsCarrier.RemoveAt(i);
+                }
+            }
+        }
+
+        private void GenerateModul()
+        {
+            PointsModulate.Add(modulate.GeneratePoint(FrequencyModulate, PeriodModulate));
+
+            if (PointsModulate.Count > Amount)
+            {
+                for (int i = 0; i < (PointsModulate.Count - Amount); i++)
+                {
+                    PointsModulate.RemoveAt(i);
+                }
+            }
+        }
+
+        private void GenerateModulated()
+        {
+            PointsASK.Add(ask.GeneratePoint(modulate.Phase, carrier.Phase));
+
+            if (PointsASK.Count > Amount)
+            {
+                for (int i = 0; i < (PointsASK.Count - Amount); i++)
+                {
+                    PointsASK.RemoveAt(i);
+                }
+            }
         }
     }
 }
